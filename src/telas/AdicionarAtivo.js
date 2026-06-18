@@ -1,7 +1,7 @@
 import { addDoc, collection } from 'firebase/firestore';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { db } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 
 const CATEGORIAS = {
   Crypto: ['BTC', 'ETH'],
@@ -20,12 +20,19 @@ export default function AdicionarAtivo({ navigation }) {
       return;
     }
 
+    const usuarioAtual = auth.currentUser;
+    if (!usuarioAtual) {
+      Alert.alert('Erro', 'Você precisa estar logado para adicionar ativos.');
+      return;
+    }
+
     setSalvando(true);
 
     try {
       await addDoc(collection(db, 'ativos'), {
         nome: ativoSel, 
-        quantidade: parseFloat(quantidade.replace(',', '.'))
+        quantidade: parseFloat(quantidade.replace(',', '.')),
+        userId: usuarioAtual.uid 
       });
 
       Alert.alert('Sucesso', 'Ativo adicionado!');
