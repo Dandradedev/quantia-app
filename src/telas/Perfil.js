@@ -14,7 +14,7 @@ export default function Perfil({ navigation }) {
 
   const usuarioLogado = auth.currentUser;
 
-  // Carrega os dados adicionais do Firestore (Nome e Nascimento)
+  
   async function carregarPerfil() {
     if (!usuarioLogado) return;
     setEmail(usuarioLogado.email || '');
@@ -28,7 +28,7 @@ export default function Perfil({ navigation }) {
         setNomeCompleto(dados.nomeCompleto || usuarioLogado.displayName || '');
         setDataNascimento(dados.dataNascimento || '');
       } else {
-        // Se não existir o documento ainda, preenche com o básico
+        
         setNomeCompleto(usuarioLogado.displayName || '');
       }
     } catch (error) {
@@ -47,7 +47,6 @@ export default function Perfil({ navigation }) {
       setCarregando(true);
       const docRef = doc(db, 'usuarios', usuarioLogado.uid);
       
-      // Salva ou atualiza no Firestore
       await setDoc(docRef, {
         nomeCompleto: nomeCompleto,
         dataNascimento: dataNascimento,
@@ -84,10 +83,9 @@ export default function Perfil({ navigation }) {
 
   const fazerLogout = async () => {
     await auth.signOut();
-    navigation.replace('Login'); // Ajuste o nome da sua tela de Login se necessário
+    navigation.replace('Login'); 
   };
 
-  // Pega as iniciais do nome para o Avatar
   const obterIniciais = (nome) => {
     if (!nome) return 'IV';
     const partes = nome.trim().split(' ');
@@ -108,7 +106,7 @@ export default function Perfil({ navigation }) {
   return (
     <ScrollView style={estilos.fundo} showsVerticalScrollIndicator={false}>
       
-      {/* HEADER DO PERFIL */}
+      {}
       <View style={estilos.headerPerfil}>
         <View style={estilos.avatarCirculo}>
           <Text style={estilos.avatarTexto}>{obterIniciais(nomeCompleto)}</Text>
@@ -117,7 +115,7 @@ export default function Perfil({ navigation }) {
         <Text style={estilos.usuarioStatus}>Membro Premium 💎</Text>
       </View>
 
-      {/* SEÇÃO DADOS PESSOAIS */}
+      {}
       <View style={estilos.boxCard}>
         <View style={estilos.linhaTituloBox}>
           <Text style={estilos.tituloSessao}>Dados Pessoais</Text>
@@ -152,7 +150,7 @@ export default function Perfil({ navigation }) {
         </View>
       </View>
 
-      {/* SEÇÃO SEGURANÇA */}
+      {}
       <View style={estilos.boxCard}>
         <Text style={estilos.tituloSessao}>Segurança da Conta</Text>
         <Text style={estilos.descricaoSegurança}>Altere sua senha de acesso ao ecossistema:</Text>
@@ -172,7 +170,7 @@ export default function Perfil({ navigation }) {
         </View>
       </View>
 
-      {/* BOTÕES DE SAÍDA */}
+      {}
       <TouchableOpacity style={estilos.botaoLogout} onPress={fazerLogout}>
         <Text style={estilos.textoBotaoLogout}>Sair da Conta 🚪</Text>
       </TouchableOpacity>

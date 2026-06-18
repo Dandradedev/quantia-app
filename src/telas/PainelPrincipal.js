@@ -12,14 +12,12 @@ export default function PainelPrincipal({ navigation }) {
   const [saldoTotal, setSaldoTotal] = useState(0);
   const [cotacoesDia, setCotacoesDia] = useState([]);
   
-  // NOVOS ESTADOS ADICIONADOS
   const [variacaoCarteira, setVariacaoCarteira] = useState(0);
   const [ocultarSaldo, setOcultarSaldo] = useState(false);
   
   const larguraTela = Dimensions.get('window').width;
   const isFocused = useIsFocused();
 
-  // Calcula a cor dinamicamente com base no novo estado
   const isAlta = variacaoCarteira >= 0;
   const corTendencia = isAlta ? '#32cd32' : '#ff4444';
 
@@ -51,7 +49,7 @@ export default function PainelPrincipal({ navigation }) {
       
       const listaAtivos = [];
       let calculoSaldo = 0;
-      let somaVariacoes = 0; // Para calcular a média da carteira
+      let somaVariacoes = 0;
 
       querySnapshot.forEach((doco) => {
         const dados = doco.data();
@@ -77,7 +75,7 @@ export default function PainelPrincipal({ navigation }) {
         calculoSaldo += valorInvestido;
 
         if (precoAtual > 0 || nomeTratado === 'BRL') {
-          const varAtivo = (Math.random() * 5 - 2).toFixed(2); // Mantendo a simulação
+          const varAtivo = (Math.random() * 5 - 2).toFixed(2); 
           somaVariacoes += parseFloat(varAtivo);
           
           listaAtivos.push({
@@ -91,7 +89,7 @@ export default function PainelPrincipal({ navigation }) {
       setMeusAtivos(listaAtivos);
       setSaldoTotal(calculoSaldo);
 
-      // CÁLCULO DINÂMICO DA VARIAÇÃO DA CARTEIRA
+      
       if (listaAtivos.length > 0) {
         setVariacaoCarteira((somaVariacoes / listaAtivos.length).toFixed(2));
       } else {
@@ -230,7 +228,7 @@ export default function PainelPrincipal({ navigation }) {
           </TouchableOpacity>
         </View>
         
-        {/* Adicionado o TouchableOpacity para Ocultar/Mostrar saldo */}
+        {}
         <TouchableOpacity style={estilos.linhaSaldo} onPress={() => setOcultarSaldo(!ocultarSaldo)}>
           <Text style={estilos.totalText}>
             {ocultarSaldo ? 'R$ •••••••' : `R$ ${Number(saldoTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -328,7 +326,6 @@ const estilos = StyleSheet.create({
   cabecalhoBox: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
   textoVazio: { color: '#444', fontStyle: 'italic', paddingBottom: 10 },
   
-  /* AQUI ESTÁ A CORREÇÃO MÁGICA DO LAYOUT DOS BOTÕES E TEXTOS */
   linhaAtivo: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomWidth: 1, borderColor: '#1a1a1c' },
   ativoEsquerda: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   circuloIcone: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
@@ -341,7 +338,6 @@ const estilos = StyleSheet.create({
   linhaPreco: { flexDirection: 'row', alignItems: 'center' },
   textoVar: { fontWeight: 'bold', fontSize: 12 },
   
-  /* NOVOS ESTILOS PARA OS BOTÕES REDONDOS VERDE E VERMELHO */
   botoesAcao: { flexDirection: 'row', alignItems: 'center' },
   btnEditar: { backgroundColor: '#32cd32', width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   btnExcluir: { backgroundColor: '#ff4444', width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
