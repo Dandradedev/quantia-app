@@ -1,11 +1,15 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
+<<<<<<< HEAD
 import {
   ActivityIndicator, Alert,
   KeyboardAvoidingView, Platform, SafeAreaView,
   StyleSheet, Text, TextInput,
   TouchableOpacity, View
 } from 'react-native';
+=======
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
 import { auth } from '../firebaseConfig';
 
 export default function Login({ navigation }) {
@@ -15,23 +19,37 @@ export default function Login({ navigation }) {
 
   const fazerLogin = async () => {
     if (email === '' || senha === '') {
+<<<<<<< HEAD
       Alert.alert('Atenção', 'Por favor, preencha seu e-mail e senha.');
+=======
+      Alert.alert('Erro', 'Preencha e-mail e senha.');
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
       return;
     }
 
     setCarregando(true);
     try {
+<<<<<<< HEAD
       await signInWithEmailAndPassword(auth, email.trim(), senha);
       navigation.replace('Painel'); 
     } catch (error) {
       console.error(error);
       Alert.alert('Acesso Negado', 'E-mail ou senha incorretos. Tente novamente.');
+=======
+      await signInWithEmailAndPassword(auth, email, senha);
+
+      navigation.replace('Painel'); 
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro no Login', 'E-mail ou senha incorretos.');
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
     } finally {
       setCarregando(false);
     }
   };
 
   return (
+<<<<<<< HEAD
     <SafeAreaView style={estilos.fundo}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -92,10 +110,46 @@ export default function Login({ navigation }) {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+=======
+    <View style={estilos.fundo}>
+      <View style={estilos.container}>
+        <Text style={estilos.logo}>Delta Tracker</Text>
+        <Text style={estilos.subtitulo}>Acesse sua carteira</Text>
+
+        <TextInput
+          style={estilos.input}
+          placeholder="Seu E-mail"
+          placeholderTextColor="#666"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+
+        <TextInput
+          style={estilos.input}
+          placeholder="Sua Senha"
+          placeholderTextColor="#666"
+          secureTextEntry
+          value={senha}
+          onChangeText={setSenha}
+        />
+
+        <TouchableOpacity style={estilos.botaoAcao} onPress={fazerLogin} disabled={carregando}>
+          {carregando ? <ActivityIndicator color="#000" /> : <Text style={estilos.textoBotao}>Entrar</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Cadastro')} style={{ marginTop: 30 }}>
+          <Text style={estilos.textoLink}>Ainda não tem conta? <Text style={{ color: '#32cd32' }}>Crie uma aqui.</Text></Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   );
 }
 
 const estilos = StyleSheet.create({
+<<<<<<< HEAD
   fundo: { flex: 1, backgroundColor: '#050505' },
   container: { flex: 1, padding: 25, justifyContent: 'center' },
   
@@ -119,4 +173,21 @@ const estilos = StyleSheet.create({
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 40 },
   textoLink: { color: '#666', fontSize: 14 },
   textoLinkDestaque: { color: '#32cd32', fontSize: 14, fontWeight: 'bold' }
+=======
+  fundo: { flex: 1, backgroundColor: '#000', justifyContent: 'center' },
+  container: { padding: 30 },
+  logo: { color: '#FFF', fontSize: 36, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  subtitulo: { color: '#888', fontSize: 16, marginBottom: 50, textAlign: 'center' },
+  input: {
+    backgroundColor: '#111',
+    color: '#FFF',
+    fontSize: 16,
+    padding: 18,
+    borderRadius: 15,
+    marginBottom: 20,
+  },
+  botaoAcao: { backgroundColor: '#32cd32', padding: 18, borderRadius: 15, alignItems: 'center', marginTop: 10 },
+  textoBotao: { color: '#000', fontSize: 16, fontWeight: 'bold' },
+  textoLink: { color: '#888', textAlign: 'center', fontSize: 14 }
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
 });

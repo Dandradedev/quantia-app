@@ -1,6 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { ActivityIndicator, Alert, Dimensions, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart, LineChart, PieChart } from 'react-native-chart-kit';
 import { auth, db } from '../firebaseConfig';
@@ -8,14 +9,26 @@ import { auth, db } from '../firebaseConfig';
 export default function PainelPrincipal({ navigation }) {
   const [carregando, setCarregando] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+=======
+import { ActivityIndicator, Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+import { auth, db } from '../firebaseConfig';
+import { buscarCotacoes } from '../servicos/apiCotacoes';
+
+export default function PainelPrincipal({ navigation }) {
+  const [carregando, setCarregando] = useState(true);
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   const [meusAtivos, setMeusAtivos] = useState([]);
   const [saldoTotal, setSaldoTotal] = useState(0);
   const [cotacoesDia, setCotacoesDia] = useState([]);
   
+<<<<<<< HEAD
   const [tipoGrafico, setTipoGrafico] = useState('pizza');
   const [totaisSetores, setTotaisSetores] = useState({ renda_fixa: 0, renda_variavel: 0, crypto: 0, moeda: 0 });
   const [recomendacao, setRecomendacao] = useState({ texto: 'Analisando mercado...', ativo: '' });
   
+=======
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   const [variacaoCarteira, setVariacaoCarteira] = useState(0);
   const [ocultarSaldo, setOcultarSaldo] = useState(false);
   
@@ -25,6 +38,7 @@ export default function PainelPrincipal({ navigation }) {
   const isAlta = variacaoCarteira >= 0;
   const corTendencia = isAlta ? '#32cd32' : '#ff4444';
 
+<<<<<<< HEAD
   const BRAPI_TOKEN = '8LYxyMFxEV1MPZyFu1RF23'; 
 
   const coresSetores = {
@@ -41,11 +55,14 @@ export default function PainelPrincipal({ navigation }) {
     return 'Boa noite,';
   };
 
+=======
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   async function carregarDadosDoApp() {
     const usuarioAtual = auth.currentUser;
     if (!usuarioAtual) return;
 
     try {
+<<<<<<< HEAD
       let tendenciasVisuais = [];
 
       try {
@@ -181,11 +198,71 @@ export default function PainelPrincipal({ navigation }) {
           precoAtual, valorInvestido, corIcone: coresSetores[dados.tipo] || '#1c1c1e', 
           tipo: dados.tipo, variacao: varAtivo, subDetalhe
         });
+=======
+      const precosMercado = await buscarCotacoes();
+      
+      try {
+        const respGecko = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=brl&order=volume_desc&per_page=5&page=1&sparkline=true');
+        const dadosGecko = await respGecko.json();
+        
+        if (Array.isArray(dadosGecko)) {
+          const formatadosGecko = dadosGecko.map(coin => ({
+            id: coin.id, sigla: (coin.symbol || '').toUpperCase(), preco: coin.current_price || 0,
+            variacao: coin.price_change_percentage_24h || 0, 
+            grafico: coin.sparkline_in_7d?.price?.filter((_, i) => i % 24 === 0) || []
+          }));
+          setCotacoesDia(formatadosGecko);
+        }
+      } catch (e) {
+        console.log('Aviso: Não foi possível carregar a API CoinGecko', e);
+      }
+
+      const q = query(collection(db, "ativos"), where("userId", "==", usuarioAtual.uid));
+      const querySnapshot = await getDocs(q);
+      
+      const listaAtivos = [];
+      let calculoSaldo = 0;
+      let somaVariacoes = 0;
+
+      querySnapshot.forEach((doco) => {
+        const dados = doco.data();
+        if (!dados || !dados.nome) return;
+
+        let precoAtual = 0; let siglaPadrao = ''; let corIcone = '#1c1c1e'; let tipo = 'outro'; let iconeDisplay = ''; let bandeira = '';
+        const nomeTratado = dados.nome.toUpperCase().trim();
+
+        if (nomeTratado === 'BTC' || nomeTratado === 'BITCOIN') {
+          precoAtual = precosMercado?.bitcoin || 0; siglaPadrao = 'BTC'; corIcone = '#F7931A'; tipo = 'crypto'; iconeDisplay = '₿';
+        } else if (nomeTratado === 'ETH' || nomeTratado === 'ETHEREUM') {
+          precoAtual = precosMercado?.ethereum || 0; siglaPadrao = 'ETH'; corIcone = '#627EEA'; tipo = 'crypto'; iconeDisplay = 'Ξ';
+        } else if (nomeTratado === 'USD' || nomeTratado === 'DOLAR' || nomeTratado === 'DÓLAR') {
+          precoAtual = precosMercado?.dolar || 0; siglaPadrao = 'USD'; corIcone = '#2e8b57'; tipo = 'moeda'; iconeDisplay = '$'; bandeira = '🇺🇸'; 
+        } else if (nomeTratado === 'EUR' || nomeTratado === 'EURO') {
+          precoAtual = precosMercado?.euro || 0; siglaPadrao = 'EUR'; corIcone = '#003399'; tipo = 'moeda'; iconeDisplay = '€'; bandeira = '🇪🇺';
+        } else if (nomeTratado === 'BRL' || nomeTratado === 'REAL') {
+          precoAtual = 1; siglaPadrao = 'BRL'; corIcone = '#009b3a'; tipo = 'moeda'; iconeDisplay = 'R$'; bandeira = '🇧🇷';
+        }
+
+        const quantidadeNumerica = Number(dados.quantidade) || 0;
+        const valorInvestido = quantidadeNumerica * precoAtual;
+        calculoSaldo += valorInvestido;
+
+        if (precoAtual > 0 || nomeTratado === 'BRL') {
+          const varAtivo = (Math.random() * 5 - 2).toFixed(2); 
+          somaVariacoes += parseFloat(varAtivo);
+          
+          listaAtivos.push({
+            id: doco.id, sigla: siglaPadrao || '?', quantidade: quantidadeNumerica, precoAtual, valorInvestido, corIcone, tipo, iconeDisplay, bandeira,
+            variacao: varAtivo
+          });
+        }
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
       });
 
       listaAtivos.sort((a, b) => b.valorInvestido - a.valorInvestido);
       setMeusAtivos(listaAtivos);
       setSaldoTotal(calculoSaldo);
+<<<<<<< HEAD
       setTotaisSetores(totais);
       setVariacaoCarteira(listaAtivos.length > 0 ? (somaVariacoes / listaAtivos.length).toFixed(2) : 0);
       executarAlgoritmoRecomendacao(listaAtivos);
@@ -225,6 +302,23 @@ export default function PainelPrincipal({ navigation }) {
     setRecomendacao({ texto: "Mercado volátil. Sugerimos alocação prudente em Renda Fixa pós-fixada ou aportes em Moedas Fortes.", ativo: "HEDGE" });
   }
 
+=======
+
+      
+      if (listaAtivos.length > 0) {
+        setVariacaoCarteira((somaVariacoes / listaAtivos.length).toFixed(2));
+      } else {
+        setVariacaoCarteira(0);
+      }
+
+    } catch (error) {
+      console.error("Erro ao sincronizar dados:", error);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   useEffect(() => {
     if (isFocused) {
       setCarregando(true);
@@ -232,11 +326,28 @@ export default function PainelPrincipal({ navigation }) {
     }
   }, [isFocused]);
 
+<<<<<<< HEAD
   const excluirAtivo = (id, nome) => {
     Alert.alert('Remover Ativo', `Deseja excluir ${nome} da sua carteira?`, [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Confirmar Exclusão', style: 'destructive', onPress: () => deletarDoFirebase(id) }
     ]);
+=======
+  const excluirAtivo = (id, sigla) => {
+    if (Platform.OS === 'web') {
+      const confirma = window.confirm(`Tem certeza que deseja remover ${sigla} da sua carteira?`);
+      if (confirma) deletarDoFirebase(id);
+    } else {
+      Alert.alert(
+        'Remover Ativo',
+        `Tem certeza que deseja remover ${sigla}?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Sim, Remover', style: 'destructive', onPress: () => deletarDoFirebase(id) }
+        ]
+      );
+    }
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   };
 
   const deletarDoFirebase = async (id) => {
@@ -244,6 +355,7 @@ export default function PainelPrincipal({ navigation }) {
       setCarregando(true);
       await deleteDoc(doc(db, "ativos", id));
       await carregarDadosDoApp();
+<<<<<<< HEAD
     } catch (error) { Alert.alert('Erro', 'Falha ao deletar.'); setCarregando(false); }
   };
 
@@ -252,11 +364,36 @@ export default function PainelPrincipal({ navigation }) {
       { text: "Cancelar", style: "cancel" }, 
       { text: "Atualizar", onPress: (novaQtd) => salvarEdicao(id, novaQtd) }
     ], 'plain-text', quantidadeAtual.toString());
+=======
+    } catch (error) {
+      console.error("Erro ao deletar:", error);
+      Alert.alert('Erro', 'Não foi possível remover o ativo.');
+      setCarregando(false);
+    }
+  };
+
+  const editarAtivo = async (id, quantidadeAtual) => {
+    if (Platform.OS === 'web') {
+      const novaQtd = window.prompt("Digite a nova quantidade:", quantidadeAtual);
+      if (novaQtd !== null && novaQtd.trim() !== '') {
+        salvarEdicao(id, novaQtd);
+      }
+    } else if (Platform.OS === 'ios') {
+      Alert.prompt(
+        "Editar Quantidade", "Digite a nova quantidade:",
+        [ { text: "Cancelar", style: "cancel" }, { text: "Salvar", onPress: (novaQtd) => salvarEdicao(id, novaQtd) } ],
+        'plain-text', quantidadeAtual.toString()
+      );
+    } else {
+      Alert.alert("Aviso", "Edição nativa disponível em breve.");
+    }
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
   };
 
   const salvarEdicao = async (id, novaQtd) => {
     try {
       setCarregando(true);
+<<<<<<< HEAD
       await updateDoc(doc(db, "ativos", id), { quantidade: parseFloat(novaQtd.replace(',', '.')) });
       await carregarDadosDoApp();
     } catch (error) { setCarregando(false); }
@@ -286,39 +423,93 @@ export default function PainelPrincipal({ navigation }) {
   const renderItemAtivo = (ativo) => {
     const varNum = parseFloat(ativo.variacao) || 0;
     const corVar = varNum >= 0 ? '#32cd32' : '#ff4444';
+=======
+      const ativoRef = doc(db, "ativos", id);
+      await updateDoc(ativoRef, { quantidade: parseFloat(novaQtd.replace(',', '.')) });
+      alert("Sucesso! Quantidade atualizada.");
+      await carregarDadosDoApp();
+    } catch (error) {
+      alert("Erro ao editar.");
+      setCarregando(false);
+    }
+  };
+
+  const ativosCrypto = meusAtivos.filter(a => a.tipo === 'crypto');
+  const ativosMoeda = meusAtivos.filter(a => a.tipo === 'moeda');
+  const nomeUsuario = auth.currentUser?.displayName ? auth.currentUser.displayName.split(' ')[0] : 'Investidor';
+
+  const renderItemAtivo = (ativo) => {
+    const varNum = parseFloat(ativo.variacao) || 0;
+    const corVar = varNum >= 0 ? '#32cd32' : '#ff4444';
+    const corDoTextoIcone = ativo.sigla === 'BTC' ? '#000' : '#FFF';
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
 
     return (
       <View key={ativo.id} style={estilos.linhaAtivo}>
         <View style={estilos.ativoEsquerda}>
+<<<<<<< HEAD
           <View style={[estilos.marcadorSetor, { backgroundColor: ativo.corIcone }]} />
           <View>
             <Text style={estilos.ativoNome}>{ativo.nome}</Text>
             <Text style={estilos.ativoQtd}>{ativo.subDetalhe}</Text>
+=======
+          <View style={[estilos.circuloIcone, { backgroundColor: ativo.corIcone }]}>
+            <Text style={[estilos.textoIcone, { color: corDoTextoIcone }]}>
+              {ativo.iconeDisplay || (ativo.sigla ? ativo.sigla.charAt(0) : '?')}
+            </Text>
+          </View>
+          <View>
+            <Text style={estilos.ativoNome}>{ativo.tipo === 'moeda' ? `${ativo.bandeira} ` : ''}{ativo.sigla}</Text>
+            <Text style={estilos.ativoQtd}>{ativo.quantidade} unid.</Text>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
           </View>
         </View>
 
         <View style={estilos.ativoDireita}>
+<<<<<<< HEAD
           <Text style={estilos.ativoValor}>{ocultarSaldo ? 'R$ •••••' : `R$ ${Number(ativo.valorInvestido || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</Text>
           <Text style={[estilos.textoVar, { color: corVar }]}>{varNum >= 0 ? '+' : ''}{ativo.variacao}%</Text>
+=======
+          <Text style={estilos.ativoValor}>
+            {ocultarSaldo ? 'R$ •••••' : `R$ ${Number(ativo.valorInvestido || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          </Text>
+          <View style={estilos.linhaPreco}>
+            <Text style={[estilos.textoVar, { color: corVar }]}>
+              {varNum >= 0 ? '+' : ''}{ativo.variacao}%
+            </Text>
+          </View>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
         </View>
 
         <View style={estilos.botoesAcao}>
           <TouchableOpacity style={estilos.btnEditar} onPress={() => editarAtivo(ativo.id, ativo.quantidade)}>
+<<<<<<< HEAD
             <Text style={estilos.txtAcao}>✎</Text>
           </TouchableOpacity>
           <TouchableOpacity style={estilos.btnExcluir} onPress={() => excluirAtivo(ativo.id, ativo.nome)}>
             <Text style={estilos.txtAcao}>✕</Text>
+=======
+            <Text style={{ fontSize: 14, color: '#FFF' }}>✎</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={estilos.btnExcluir} onPress={() => excluirAtivo(ativo.id, ativo.sigla)}>
+            <Text style={{ fontSize: 14, color: '#FFF' }}>✕</Text>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
           </TouchableOpacity>
         </View>
       </View>
     );
   };
 
+<<<<<<< HEAD
   if (carregando && !refreshing) {
+=======
+  if (carregando) {
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
     return <View style={estilos.carregando}><ActivityIndicator size="large" color="#32cd32" /></View>;
   }
 
   return (
+<<<<<<< HEAD
     <ScrollView 
       style={estilos.fundo} 
       showsVerticalScrollIndicator={false}
@@ -334,10 +525,23 @@ export default function PainelPrincipal({ navigation }) {
         </View>
         
         <Text style={estilos.subtituloPatrimonio}>Patrimônio Consolidado</Text>
+=======
+    <ScrollView style={estilos.fundo} showsVerticalScrollIndicator={false}>
+      <View style={estilos.boxPatrimonio}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={estilos.labelTopo}>Olá, {nomeUsuario} • Seu Saldo</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Perfil')}>
+            <Text style={{ color: '#32cd32', fontWeight: 'bold' }}>⚙️ Perfil</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {}
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
         <TouchableOpacity style={estilos.linhaSaldo} onPress={() => setOcultarSaldo(!ocultarSaldo)}>
           <Text style={estilos.totalText}>
             {ocultarSaldo ? 'R$ •••••••' : `R$ ${Number(saldoTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </Text>
+<<<<<<< HEAD
           <View style={[estilos.badge, { backgroundColor: isAlta ? 'rgba(50,205,50,0.15)' : 'rgba(255,68,68,0.15)' }]}>
              <Text style={[estilos.badgeText, { color: corTendencia }]}>{isAlta ? '▲' : '▼'} {variacaoCarteira}%</Text>
           </View>
@@ -363,6 +567,19 @@ export default function PainelPrincipal({ navigation }) {
 
       <View style={estilos.sessaoGeral}>
         <Text style={estilos.tituloSessaoGeral}>Termômetro Global 🌍</Text>
+=======
+          <View style={[estilos.badge, { backgroundColor: isAlta ? 'rgba(50,205,50,0.1)' : 'rgba(255,68,68,0.1)' }]}>
+             <Text style={[estilos.badgeText, { color: corTendencia }]}>
+               {isAlta ? '+' : ''}{variacaoCarteira}%
+             </Text>
+          </View>
+        </TouchableOpacity>
+        <Text style={estilos.dicaOcultar}>Toque no saldo para {ocultarSaldo ? 'mostrar' : 'ocultar'}</Text>
+      </View>
+
+      <View style={estilos.sessaoGeral}>
+        <Text style={estilos.tituloSessao}>Mercado Hoje</Text>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={estilos.scrollCota}>
           {cotacoesDia.map((moeda) => {
             const altaMoeda = (moeda.variacao || 0) >= 0;
@@ -370,12 +587,29 @@ export default function PainelPrincipal({ navigation }) {
               <View key={moeda.id} style={estilos.cardCotacao}>
                 <View style={estilos.topoCardCotacao}>
                   <Text style={estilos.siglaCotacao}>{moeda.sigla}</Text>
+<<<<<<< HEAD
                   <Text style={[estilos.varCotacao, { color: altaMoeda ? '#32cd32' : '#ff4444' }]}>{altaMoeda ? '+' : ''}{Number(moeda.variacao || 0).toFixed(2)}%</Text>
                 </View>
                 <Text style={estilos.precoCotacao}>R$ {Number(moeda.preco || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</Text>
                 {moeda.grafico && (
                   <View style={{ marginTop: 12, alignItems: 'center' }}>
                     <LineChart data={{ datasets: [{ data: moeda.grafico }] }} width={160} height={55} withDots={false} withInnerLines={false} withOuterLines={false} withHorizontalLabels={false} withVerticalLabels={false} chartConfig={{ backgroundColor: '#0A0A0C', backgroundGradientFrom: '#0A0A0C', backgroundGradientTo: '#0A0A0C', color: () => altaMoeda ? '#32cd32' : '#ff4444', strokeWidth: 2 }} bezier style={{ paddingRight: 0, paddingLeft: 0, bottom: -5 }} />
+=======
+                  <Text style={[estilos.varCotacao, { color: altaMoeda ? '#32cd32' : '#ff4444' }]}>
+                    {altaMoeda ? '+' : ''}{Number(moeda.variacao || 0).toFixed(2)}%
+                  </Text>
+                </View>
+                <Text style={estilos.precoCotacao}>R$ {Number(moeda.preco || 0).toLocaleString('pt-BR')}</Text>
+                
+                {moeda.grafico && moeda.grafico.length > 2 && (
+                  <View style={{ marginTop: 10 }}>
+                    <LineChart
+                      data={{ datasets: [{ data: moeda.grafico }] }}
+                      width={120} height={40} withDots={false} withInnerLines={false} withOuterLines={false} withHorizontalLabels={false} withVerticalLabels={false}
+                      chartConfig={{ backgroundColor: '#0a0a0c', backgroundGradientFrom: '#0a0a0c', backgroundGradientTo: '#0a0a0c', color: () => altaMoeda ? '#32cd32' : '#ff4444', strokeWidth: 2 }}
+                      bezier style={{ paddingRight: 0, paddingTop: 0, paddingBottom: 0 }}
+                    />
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
                   </View>
                 )}
               </View>
@@ -384,6 +618,7 @@ export default function PainelPrincipal({ navigation }) {
         </ScrollView>
       </View>
 
+<<<<<<< HEAD
       {['renda_fixa', 'renda_variavel', 'crypto', 'moeda'].map((tipo) => {
         const ativosTipo = meusAtivos.filter(a => a.tipo === tipo);
         const titulos = { renda_fixa: 'Renda Fixa', renda_variavel: 'Ações & FIIs', crypto: 'Criptoativos', moeda: 'Moedas Fortes' };
@@ -397,12 +632,39 @@ export default function PainelPrincipal({ navigation }) {
 
       <TouchableOpacity style={estilos.botaoAcao} onPress={() => navigation.navigate('Adicionar')}>
         <Text style={estilos.textoBotaoAcao}>+ Lançar Nova Operação</Text>
+=======
+      <View style={estilos.boxCategoria}>
+        <View style={estilos.cabecalhoBox}>
+          <Text style={estilos.tituloSessao}>Criptomoedas</Text>
+        </View>
+        {ativosCrypto.length === 0 ? (
+          <Text style={estilos.textoVazio}>Nenhuma cripto adicionada.</Text>
+        ) : (
+          ativosCrypto.map(renderItemAtivo)
+        )}
+      </View>
+
+      <View style={estilos.boxCategoria}>
+        <View style={estilos.cabecalhoBox}>
+          <Text style={estilos.tituloSessao}>Moedas</Text>
+        </View>
+        {ativosMoeda.length === 0 ? (
+          <Text style={estilos.textoVazio}>Nenhuma moeda adicionada.</Text>
+        ) : (
+          ativosMoeda.map(renderItemAtivo)
+        )}
+      </View>
+
+      <TouchableOpacity style={estilos.botaoAcao} onPress={() => navigation.navigate('Adicionar')}>
+        <Text style={estilos.textoBotaoAcao}>+ Cadastrar Operação</Text>
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const estilos = StyleSheet.create({
+<<<<<<< HEAD
   fundo: { flex: 1, backgroundColor: '#020202' }, 
   carregando: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#020202' },
   
@@ -458,4 +720,47 @@ const estilos = StyleSheet.create({
 
   botaoAcao: { marginHorizontal: 20, backgroundColor: '#32cd32', paddingVertical: 18, borderRadius: 20, alignItems: 'center', marginBottom: 50, shadowColor: '#32cd32', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
   textoBotaoAcao: { color: '#000', fontWeight: '900', fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 }
+=======
+  fundo: { flex: 1, backgroundColor: '#000' }, 
+  carregando: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
+  boxPatrimonio: { padding: 25, paddingTop: 50, paddingBottom: 15 },
+  labelTopo: { color: '#888', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: '600' },
+  linhaSaldo: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  totalText: { color: '#FFF', fontSize: 38, fontWeight: 'bold' },
+  badge: { marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  badgeText: { fontWeight: 'bold', fontSize: 13 },
+  dicaOcultar: { color: '#444', fontSize: 11, marginTop: 5, fontStyle: 'italic' },
+  
+  sessaoGeral: { paddingLeft: 20, marginBottom: 25, marginTop: 10 },
+  tituloSessao: { color: '#FFF', fontSize: 18, fontWeight: '700', marginBottom: 15 },
+  scrollCota: { overflow: 'visible' },
+  cardCotacao: { backgroundColor: '#0a0a0c', padding: 15, borderRadius: 20, marginRight: 15, width: 150 },
+  topoCardCotacao: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  siglaCotacao: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
+  varCotacao: { fontSize: 12, fontWeight: 'bold' },
+  precoCotacao: { color: '#888', fontSize: 13 },
+  
+  boxCategoria: { backgroundColor: '#0a0a0c', marginHorizontal: 20, borderRadius: 24, padding: 20, marginBottom: 20 },
+  cabecalhoBox: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+  textoVazio: { color: '#444', fontStyle: 'italic', paddingBottom: 10 },
+  
+  linhaAtivo: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomWidth: 1, borderColor: '#1a1a1c' },
+  ativoEsquerda: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  circuloIcone: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+  textoIcone: { fontWeight: 'bold', fontSize: 20 },
+  ativoNome: { color: '#FFF', fontWeight: 'bold', fontSize: 16, marginBottom: 4 },
+  ativoQtd: { color: '#666', fontSize: 13 },
+  
+  ativoDireita: { alignItems: 'flex-end', marginRight: 15 },
+  ativoValor: { color: '#FFF', fontWeight: 'bold', fontSize: 16, marginBottom: 4 },
+  linhaPreco: { flexDirection: 'row', alignItems: 'center' },
+  textoVar: { fontWeight: 'bold', fontSize: 12 },
+  
+  botoesAcao: { flexDirection: 'row', alignItems: 'center' },
+  btnEditar: { backgroundColor: '#32cd32', width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  btnExcluir: { backgroundColor: '#ff4444', width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center' },
+
+  botaoAcao: { marginHorizontal: 20, backgroundColor: '#0a0a0c', padding: 20, borderRadius: 24, alignItems: 'center', marginBottom: 50 },
+  textoBotaoAcao: { color: '#32cd32', fontWeight: 'bold', fontSize: 16 }
+>>>>>>> 40395d161937ec9d5e514163c6df3bc30d1b7e7a
 });
